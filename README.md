@@ -1,9 +1,9 @@
-# @openclaw/channel-onebot11
+# @maxesisn/openclaw-channel-onebot11
 
 A minimal, **DM-only** OneBot v11 channel plugin for OpenClaw (Reverse WebSocket).
 
 This project intentionally focuses on the “small & safe by default” subset:
-- **Reverse WS** (e.g. NapCatQQ connects as client)
+- **Reverse WS** (OneBot v11-compatible client connects as client)
 - **Private messages only** (no groups)
 - Token auth (`Authorization: Bearer ...`)
 - Quote/reply support (fetch original via `get_msg` and include in context)
@@ -33,7 +33,7 @@ Clone this repo somewhere on the OpenClaw host, then add it to your OpenClaw con
 
 ### Option B: publish to npm
 
-Package name is already set to `@openclaw/channel-onebot11`.
+Package name is set to `@maxesisn/openclaw-channel-onebot11`.
 
 ## Configuration
 
@@ -88,14 +88,14 @@ Multi-account example (two ports):
 }
 ```
 
-## NapCatQQ (Reverse WS)
+## Reverse WS client configuration
 
-Configure NapCat OneBot v11 Reverse WebSocket (Universal) to connect:
+Configure your OneBot v11 client (Reverse WebSocket / Universal) to connect:
 
 - URL: `ws://<openclaw-host>:3002/onebot/v11/ws`
 - Headers/Auth: `Authorization: Bearer <YOUR_TOKEN>`
 
-(Exact UI names vary by NapCat build.)
+(Exact UI names vary by client implementation.)
 
 ## Notes
 
