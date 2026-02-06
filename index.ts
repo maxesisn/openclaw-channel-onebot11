@@ -4,7 +4,7 @@ import { onebot11Channel } from "./src/channel.js";
 import { setOneBot11Runtime } from "./src/runtime.js";
 
 const plugin = {
-  id: "channel-onebot11",
+  id: "onebot11",
   name: "OneBot v11 (Reverse WS)",
   description: "OneBot v11 channel plugin (Reverse WebSocket, DM-only)",
   configSchema: emptyPluginConfigSchema(),

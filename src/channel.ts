@@ -11,7 +11,7 @@ import {
 
 import type { OneBot11AnyEvent, OneBot11Message, OneBot11MessageSegment } from "./types.js";
 import { OneBot11ConfigSchema, type OneBot11Config } from "./config.js";
-import { getOneBot11Runtime } from "./runtime.js";
+import { getOneBot11Runtime, getOneBot11Connection, setOneBot11Connection } from "./runtime.js";
 import { OneBot11ReverseWSServer } from "./server.js";
 import { markdownToPlainTextLight } from "./markdown.js";
 import { clampText, isHttpUrl, resolveToBase64Url, sleep, splitTextByLength } from "./utils.js";
@@ -191,7 +191,18 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
 
       server.onConnection((c, req) => {
         conn = c;
+        setOneBot11Connection(account.accountId, c);
+        const remote = `${req.socket.remoteAddress ?? "?"}:${req.socket.remotePort ?? "?"}`;
         runtime.channel.activity.record({ channel: "onebot11", accountId: account.accountId, direction: "inbound" });
+
+        c.on("close", () => {
+          console.log(`[OneBot11] WS closed; remote=${remote}`);
+          if (conn === c) conn = null;
+          setOneBot11Connection(account.accountId, null);
+        });
+        c.on("error", (err) => {
+          console.warn(`[OneBot11] WS error; remote=${remote}`, err);
+        });
 
         c.on("event", async (ev: OneBot11AnyEvent) => {
           try {
@@ -322,25 +333,78 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
         });
       });
 
-      await server.listen();
+      try {
+        await server.listen();
+      } catch (err) {
+        // Prevent gateway crash on transient port conflicts during restart.
+        console.error(`[OneBot11] Reverse WS listen failed on ws://${host}:${port}${path} (account=${account.accountId})`, err);
+        return async () => {
+          clearInterval(gcTimer);
+          await server.close().catch(() => undefined);
+          conn = null;
+        };
+      }
+
       console.log(`[OneBot11] Reverse WS listening on ws://${host}:${port}${path} (account=${account.accountId})`);
 
       return async () => {
         clearInterval(gcTimer);
-        await server.close();
+        await server.close().catch(() => undefined);
         conn = null;
       };
     },
   },
 
   outbound: {
-    sendText: async ({ to, text, accountId, replyTo }) => {
-      // Outbound is best-effort: only works if a client is connected.
-      // For now, channel.reply path should be used; this keeps API compatibility.
-      return { channel: "onebot11", sent: false, error: "Use conversational replies (Reverse WS connection required)" };
+    sendText: async ({ to, text, accountId }) => {
+      const accId = accountId ?? DEFAULT_ACCOUNT_ID;
+      const conn = getOneBot11Connection(accId);
+      if (!conn) return { channel: "onebot11", sent: false, error: "Reverse WS connection required" };
+
+      const userId = normalizeTarget(String(to));
+      let t = String(text ?? "");
+      // Keep behavior consistent with conversational replies
+      if (accountId) {
+        // noop; satisfy linter
+      }
+      // Default-on: if config defaults are not materialized, treat undefined as true
+      // (We can't reliably access per-account config here, so do not markdown-downgrade.)
+
+      // Split long text (best-effort)
+      const chunks = splitTextByLength(t, 3500);
+      for (let i = 0; i < chunks.length; i++) {
+        conn.sendAction("send_private_msg", {
+          user_id: Number(userId),
+          message: [{ type: "text", data: { text: chunks[i] } }],
+        });
+        if (chunks.length > 1) await sleep(800);
+      }
+      return { channel: "onebot11", sent: true };
     },
-    sendMedia: async ({ to, text, mediaUrl, accountId, replyTo }) => {
-      return { channel: "onebot11", sent: false, error: "Use conversational replies (Reverse WS connection required)" };
+    sendMedia: async ({ to, text, mediaUrl, accountId }) => {
+      const accId = accountId ?? DEFAULT_ACCOUNT_ID;
+      const conn = getOneBot11Connection(accId);
+      if (!conn) return { channel: "onebot11", sent: false, error: "Reverse WS connection required" };
+
+      const userId = normalizeTarget(String(to));
+
+      if (text) {
+        conn.sendAction("send_private_msg", {
+          user_id: Number(userId),
+          message: [{ type: "text", data: { text: String(text) } }],
+        });
+        await sleep(800);
+      }
+
+      if (mediaUrl) {
+        const u = await resolveToBase64Url(mediaUrl);
+        conn.sendAction("send_private_msg", {
+          user_id: Number(userId),
+          message: [{ type: "image", data: { file: u } }],
+        });
+      }
+
+      return { channel: "onebot11", sent: true };
     },
   },
 

@@ -1,5 +1,5 @@
 {
-  "id": "channel-onebot11",
+  "id": "onebot11",
   "channels": ["onebot11"],
   "configSchema": {
     "type": "object",
