@@ -1,6 +1,6 @@
 {
-  "name": "@maxesisn/openclaw-channel-onebot11",
-  "version": "0.1.1",
+  "name": "@maxesisn-openclaw/onebot11",
+  "version": "0.1.2",
   "type": "module",
   "description": "OpenClaw OneBot v11 channel plugin (Reverse WebSocket, DM-only)",
   "openclaw": {

@@ -1,4 +1,4 @@
-# @maxesisn/openclaw-channel-onebot11
+# @maxesisn-openclaw/onebot11
 
 A minimal, **DM-only** OneBot v11 channel plugin for OpenClaw (Reverse WebSocket).
 
@@ -30,7 +30,7 @@ If you need **group chats / commands / triggers / broader QQ features**, use a m
 ### Option A: install from npm (recommended)
 
 ```bash
-openclaw plugins install @maxesisn/openclaw-channel-onebot11
+openclaw plugins install @maxesisn-openclaw/onebot11
 openclaw gateway restart
 ```
 
@@ -40,7 +40,7 @@ Clone this repo on the OpenClaw host, then install it from the local path (or li
 
 ### Publishing (maintainers)
 
-This package is published to npm as `@maxesisn/openclaw-channel-onebot11`.
+This package is published to npm as `@maxesisn-openclaw/onebot11`.
 
 ```bash
 npm publish --access public

@@ -226,6 +226,14 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
             const rawText = (ev.raw_message ?? getTextFromMessage(ev.message)).trim();
             const replyId = getReplyId(ev.message, ev.raw_message);
 
+            try {
+              const mid = (ev as any).message_id;
+              const preview = rawText.length > 120 ? rawText.slice(0, 120) + "…" : rawText;
+              console.log(`[OneBot11] IN dm from=${String(userId)} message_id=${mid ?? "?"} reply_id=${replyId ?? "-"} text=${JSON.stringify(preview)}`);
+            } catch {
+              // ignore
+            }
+
             let replyBlock = "";
             if (replyId && config.includeReplyOriginal) {
               try {
