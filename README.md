@@ -58,6 +58,7 @@ Example (single account):
       maxMessageLength: 3500,
       rateLimitMs: 800,
       markdownToText: true,
+      sendReplySegment: false,
 
       maxInboundImages: 3
     }

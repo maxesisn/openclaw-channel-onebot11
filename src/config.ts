@@ -18,6 +18,7 @@ export const OneBot11ConfigSchema = z.object({
   maxMessageLength: z.number().int().positive().optional().default(3500).describe("Split outgoing text into chunks"),
   rateLimitMs: z.number().int().nonnegative().optional().default(800).describe("Delay between chunks (ms)"),
   markdownToText: z.boolean().optional().default(true).describe("Downgrade markdown-ish output to plain text"),
+  sendReplySegment: z.boolean().optional().default(false).describe("Prepend a OneBot reply segment when sending (quote the inbound message_id)"),
 
   /** Media */
   maxInboundImages: z.number().int().positive().optional().default(3).describe("Max inbound image urls to attach"),

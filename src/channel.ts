@@ -254,12 +254,26 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
             });
 
             const deliver = async (payload: ReplyPayload) => {
+              let repliedOnce = false;
+
+              const buildPrefix = () => {
+                if (repliedOnce) return [];
+                if (!config.sendReplySegment) return [];
+                if (!messageId) return [];
+                repliedOnce = true;
+                return [{ type: "reply", data: { id: String(messageId) } }];
+              };
+
               const sendText = async (text: string) => {
                 let t = text;
                 if (config.markdownToText) t = markdownToPlainTextLight(t);
                 const chunks = splitTextByLength(t, config.maxMessageLength ?? 3500);
                 for (let i = 0; i < chunks.length; i++) {
-                  c.sendAction("send_private_msg", { user_id: userId, message: [{ type: "text", data: { text: chunks[i] } }] });
+                  const prefix = i === 0 ? buildPrefix() : [];
+                  c.sendAction("send_private_msg", {
+                    user_id: userId,
+                    message: [...prefix, { type: "text", data: { text: chunks[i] } }],
+                  });
                   if (chunks.length > 1) await sleep(config.rateLimitMs ?? 800);
                 }
               };
@@ -273,9 +287,11 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
                   // If image-like, send as image segment; otherwise send as text link
                   const isImg = /\.(png|jpe?g|gif|webp)$/i.test(u) || u.startsWith("base64://");
                   if (isImg) {
+                    const prefix = buildPrefix();
                     c.sendAction("send_private_msg", {
                       user_id: userId,
                       message: [
+                        ...prefix,
                         ...(f.name ? [{ type: "text", data: { text: f.name } }] : []),
                         { type: "image", data: { file: u } },
                       ],
