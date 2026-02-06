@@ -9,9 +9,6 @@ export const OneBot11ConfigSchema = z.object({
   /** Auth */
   accessToken: z.string().min(1).optional().describe("Bearer token required from OneBot client"),
 
-  /** Scope */
-  allowPrivate: z.boolean().optional().default(true).describe("Allow private messages"),
-  allowGroup: z.boolean().optional().default(false).describe("Allow group messages (default off)"),
 
   /** Context */
   includeReplyOriginal: z.boolean().optional().default(true).describe("If message contains reply segment, fetch original and include in context"),

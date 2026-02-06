@@ -51,9 +51,6 @@ Example (single account):
       wsPath: "/onebot/v11/ws",
       accessToken: "<YOUR_TOKEN>",
 
-      // DM-only defaults are already safe
-      allowPrivate: true,
-      allowGroup: false,
 
       includeReplyOriginal: true,
       replyMaxChars: 1200,
