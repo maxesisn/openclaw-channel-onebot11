@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/channel-onebot11",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "OpenClaw OneBot v11 channel plugin (Reverse WebSocket, DM-only)",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
