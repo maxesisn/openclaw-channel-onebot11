@@ -4,13 +4,32 @@
   "type": "module",
   "description": "OpenClaw OneBot v11 channel plugin (Reverse WebSocket, DM-only)",
   "openclaw": {
-    "extensions": ["./index.ts"]
+    "extensions": ["./dist/index.js"]
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist/**",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "ws": "^8.18.0",
     "zod": "^4.3.6"
   },
+  "peerDependencies": {
+    "openclaw": "*"
+  },
   "devDependencies": {
+    "@types/node": "^22.13.1",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.9.3"
   }
 }

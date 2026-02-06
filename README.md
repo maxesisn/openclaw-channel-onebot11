@@ -35,6 +35,13 @@ Clone this repo somewhere on the OpenClaw host, then add it to your OpenClaw con
 
 Package name is set to `@maxesisn/openclaw-channel-onebot11`.
 
+Publish (first time):
+
+```bash
+npm login
+npm publish --access public
+```
+
 ## Configuration
 
 Add to your OpenClaw config under `channels.onebot11`.
