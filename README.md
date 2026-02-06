@@ -27,18 +27,22 @@ If you need **group chats / commands / triggers / broader QQ features**, use a m
 
 ## Installation
 
-### Option A: as a local extension (recommended while iterating)
-
-Clone this repo somewhere on the OpenClaw host, then add it to your OpenClaw config as an extension (method depends on your OpenClaw setup/version).
-
-### Option B: publish to npm
-
-Package name is set to `@maxesisn/openclaw-channel-onebot11`.
-
-Publish (first time):
+### Option A: install from npm (recommended)
 
 ```bash
-npm login
+openclaw plugins install @maxesisn/openclaw-channel-onebot11
+openclaw gateway restart
+```
+
+### Option B: local development
+
+Clone this repo on the OpenClaw host, then install it from the local path (or link it) while iterating.
+
+### Publishing (maintainers)
+
+This package is published to npm as `@maxesisn/openclaw-channel-onebot11`.
+
+```bash
 npm publish --access public
 ```
 
