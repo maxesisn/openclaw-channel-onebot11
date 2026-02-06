@@ -266,7 +266,8 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
 
               const sendText = async (text: string) => {
                 let t = text;
-                if (config.markdownToText) t = markdownToPlainTextLight(t);
+                // Default-on: if config defaults are not materialized, treat undefined as true
+                if (config.markdownToText !== false) t = markdownToPlainTextLight(t);
                 const chunks = splitTextByLength(t, config.maxMessageLength ?? 3500);
                 for (let i = 0; i < chunks.length; i++) {
                   const prefix = i === 0 ? buildPrefix() : [];
