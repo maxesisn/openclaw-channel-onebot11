@@ -16,9 +16,16 @@ export function getOneBot11Runtime(): PluginRuntime {
   return runtime;
 }
 
+const DEBUG = process.env.ONEBOT11_DEBUG === "1";
+
 export function setOneBot11Connection(accountId: string, conn: OneBot11Connection | null) {
-  if (!conn) connections.delete(accountId);
-  else connections.set(accountId, conn);
+  if (!conn) {
+    connections.delete(accountId);
+    if (DEBUG) console.log(`[OneBot11] connection cleared (accountId=${accountId})`);
+  } else {
+    connections.set(accountId, conn);
+    if (DEBUG) console.log(`[OneBot11] connection set (accountId=${accountId})`);
+  }
 }
 
 export function getOneBot11Connection(accountId: string): OneBot11Connection | null {

@@ -244,14 +244,32 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
 
             const mediaUrls = extractImageHints(ev.message, config.maxInboundImages ?? 3);
 
+            // Important: use channel-prefixed sender ids so Gateway command authorization
+            // can match channels.onebot11.allowFrom entries like "onebot11:176...".
+            const fromId = `onebot11:${String(userId)}`;
+
+            // Compute CommandAuthorized so Gateway can safely run slash commands.
+            // Default-deny behavior is common across channels; plugins must explicitly
+            // opt in for known senders.
+            const allowFrom = (
+              // @ts-ignore
+              cfg.channels?.onebot11?.allowFrom ??
+              // @ts-ignore
+              cfg.channels?.onebot11?.accounts?.[account.accountId]?.allowFrom ??
+              []
+            ) as string[];
+            const commandAuthorized = Array.isArray(allowFrom)
+              ? allowFrom.some((x) => String(x).trim() === fromId || String(x).trim() === String(userId))
+              : false;
+
             const ctxPayload = runtime.channel.reply.finalizeInboundContext({
               Provider: "onebot11",
               Channel: "onebot11",
-              From: String(userId),
+              From: fromId,
               To: "onebot11:bot",
               Body: body,
               RawBody: rawText,
-              SenderId: String(userId),
+              SenderId: fromId,
               SenderName: senderName,
               ConversationLabel: `OneBot11 DM ${userId}`,
               SessionKey: `onebot11:dm:${userId}`,
@@ -260,6 +278,7 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
               Timestamp: ev.time * 1000,
               OriginatingChannel: "onebot11",
               OriginatingTo: String(userId),
+              CommandAuthorized: commandAuthorized,
               ...(mediaUrls.length ? { MediaUrls: mediaUrls } : {}),
               ...(replyId ? { ReplyToId: String(replyId) } : {}),
             });
@@ -359,16 +378,17 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
     sendText: async ({ to, text, accountId }) => {
       const accId = accountId ?? DEFAULT_ACCOUNT_ID;
       const conn = getOneBot11Connection(accId);
+      const userId = normalizeTarget(String(to));
+
+      if (process.env.ONEBOT11_DEBUG === "1") {
+        console.log(
+          `[OneBot11] outbound.sendText accountId=${String(accountId ?? "(none)")} resolvedAccountId=${accId} to=${String(to)} userId=${userId} conn=${conn ? "ok" : "null"}`,
+        );
+      }
+
       if (!conn) return { channel: "onebot11", sent: false, error: "Reverse WS connection required" };
 
-      const userId = normalizeTarget(String(to));
-      let t = String(text ?? "");
-      // Keep behavior consistent with conversational replies
-      if (accountId) {
-        // noop; satisfy linter
-      }
-      // Default-on: if config defaults are not materialized, treat undefined as true
-      // (We can't reliably access per-account config here, so do not markdown-downgrade.)
+      const t = String(text ?? "");
 
       // Split long text (best-effort)
       const chunks = splitTextByLength(t, 3500);
@@ -384,9 +404,15 @@ export const onebot11Channel: ChannelPlugin<ResolvedAccount> = {
     sendMedia: async ({ to, text, mediaUrl, accountId }) => {
       const accId = accountId ?? DEFAULT_ACCOUNT_ID;
       const conn = getOneBot11Connection(accId);
-      if (!conn) return { channel: "onebot11", sent: false, error: "Reverse WS connection required" };
-
       const userId = normalizeTarget(String(to));
+
+      if (process.env.ONEBOT11_DEBUG === "1") {
+        console.log(
+          `[OneBot11] outbound.sendMedia accountId=${String(accountId ?? "(none)")} resolvedAccountId=${accId} to=${String(to)} userId=${userId} hasText=${Boolean(text)} hasMedia=${Boolean(mediaUrl)} conn=${conn ? "ok" : "null"}`,
+        );
+      }
+
+      if (!conn) return { channel: "onebot11", sent: false, error: "Reverse WS connection required" };
 
       if (text) {
         conn.sendAction("send_private_msg", {

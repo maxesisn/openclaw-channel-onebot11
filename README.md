@@ -108,6 +108,26 @@ Configure your OneBot v11 client (Reverse WebSocket / Universal) to connect:
 
 (Exact UI names vary by client implementation.)
 
+## Slash commands (/status, /model, ...)
+
+Text slash commands are handled by the OpenClaw Gateway and require the sender to be authorized.
+
+Make sure your `channels.onebot11.allowFrom` includes your user id (either plain or channel-prefixed):
+
+```json5
+{
+  channels: {
+    onebot11: {
+      allowFrom: ["onebot11:1763471048", "1763471048"]
+    }
+  }
+}
+```
+
+## Debug logging
+
+Set `ONEBOT11_DEBUG=1` in the gateway environment to enable extra OneBot11 plugin logs.
+
 ## Notes
 
 - This plugin expects OneBot messages preferably in **array segment format**.

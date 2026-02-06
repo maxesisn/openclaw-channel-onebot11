@@ -51,6 +51,27 @@ export class OneBot11Connection extends EventEmitter {
 
   sendAction(action: string, params?: any) {
     const req: OneBot11ActionRequest = { action, params };
+    if (process.env.ONEBOT11_DEBUG === "1") {
+      try {
+        const to = params?.user_id ?? params?.group_id ?? "?";
+        let msgPreview = "";
+        const m = params?.message;
+        if (Array.isArray(m)) {
+          const texts = m
+            .filter((s: any) => s && typeof s === "object" && s.type === "text")
+            .map((s: any) => String(s.data?.text ?? ""))
+            .join("");
+          if (texts) msgPreview = texts.slice(0, 200);
+        } else if (typeof m === "string") {
+          msgPreview = m.slice(0, 200);
+        }
+        console.log(
+          `[OneBot11] sendAction action=${action} to=${String(to)}${msgPreview ? ` text=${JSON.stringify(msgPreview)}` : ""}`,
+        );
+      } catch {
+        // ignore
+      }
+    }
     this.ws.send(JSON.stringify(req));
   }
 
